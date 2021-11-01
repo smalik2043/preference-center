@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: postgres-db
+    image: postgres:12
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PG_DATA: /var/lib/postgresql/data
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data_app:/var/lib/postgresql/data
+  nestjs:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - DB_TYPE=${DB_TYPE}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASS=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_SYNC=false
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - APP_PORT=${APP_PORT}
+    ports:
+      - '3000:3000'
+    container_name: preference-center-app
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+      - /app/node_modules
+volumes:
+  pg_data_app:
